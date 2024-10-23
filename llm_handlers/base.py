@@ -24,7 +24,7 @@ class BaseLLMHandler(ABC):
         - Network connectivity failures
         - Missing ConfigMaps or Secrets
         - Resource quota limits reached
-        - ImagePullBackOff (image retrieval issues)
+        - ImagePullBackOff (image retrieval issues which still persist)
         
         Investigation process:
         1. Begin with 'get pods -A' to obtain an overview of cluster-wide issues.
@@ -38,6 +38,7 @@ class BaseLLMHandler(ABC):
         - Directly identify and report root causes underlying symptoms like CrashLoopBackOff, specifying impacted pod names.
         - Clearly differentiate between current active issues and historical or resolved issues.
         - Provide deep, comprehensive evidence for each identified root cause, avoiding detailed symptom listings unless they reveal unique issues.
+        - Provide exact log and error messages when available.
         - Avoid speculative statements and depend on concrete evidence from kubectl commands.
         - Avoid making remediation suggestions.
         - Format your response with "Root Causes Found:" followed by enumerated distinct current issues, specifying the affected pod name(s) and the evidence pointing directly to root causes. Clearly note any historical issues that were identified.
