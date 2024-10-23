@@ -1,5 +1,5 @@
 from .openai import OpenAIHandler
-#from .anthropic import AnthropicHandler
+from .anthropic import AnthropicHandler
 
 def get_llm_handler(provider: str, model: str, config: dict):
     if provider == "openai":
