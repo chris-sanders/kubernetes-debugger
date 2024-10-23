@@ -20,17 +20,33 @@ def load_config(config_path: str = "config.yaml") -> dict:
         return yaml.safe_load(f)
 
 def get_multiline_input() -> str:
-    """Collect all input lines until an empty line is encountered"""
+    """Collect all input lines until double empty line or EOF"""
     lines = []
+    empty_line_count = 0
+    
+    # Handle single-word commands immediately
+    first_line = input()
+    if first_line.lower() in ['exit', 'reset']:
+        return first_line
+        
+    lines.append(first_line)
+    
     while True:
         try:
             line = input()
-            if not line:  # Empty line signals end of input
-                break
-            lines.append(line)
+            if not line:
+                empty_line_count += 1
+                if empty_line_count >= 2:  # Two consecutive empty lines means we're done
+                    break
+            else:
+                empty_line_count = 0
+                lines.append(line)
         except EOFError:  # Handle EOF (ctrl+d)
             break
-    return '\n'.join(lines).strip()
+    
+    final_input = '\n'.join(lines).strip()
+    print(f"DEBUG - Collected input:\n{final_input}\n---END INPUT---")  # Debug print
+    return final_input
 
 def main():
     config = load_config()
