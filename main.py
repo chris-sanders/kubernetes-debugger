@@ -12,6 +12,9 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Set third-party loggers to WARNING to reduce noise
+logging.getLogger('httpx').setLevel(logging.WARNING)
+
 # Create a console instance
 console = Console()
 
@@ -21,34 +24,51 @@ def load_config(config_path: str = "config.yaml") -> dict:
 
 def get_multiline_input() -> str:
     """Collect all input lines until double empty line or EOF"""
+    console.print("(Enter input, press Enter twice when done)", style="bold cyan")
     lines = []
     empty_line_count = 0
     
-    # Handle single-word commands immediately
-    first_line = input()
-    if first_line.lower() in ['exit', 'reset']:
-        return first_line
+    try:
+        # Handle single-word commands immediately
+        first_line = input()
+        if first_line.lower() in ['exit', 'reset']:
+            return first_line
+            
+        lines.append(first_line)
         
-    lines.append(first_line)
-    
-    while True:
-        try:
-            line = input()
-            if not line:
-                empty_line_count += 1
-                if empty_line_count >= 2:  # Two consecutive empty lines means we're done
-                    break
-            else:
-                empty_line_count = 0
-                lines.append(line)
-        except EOFError:  # Handle EOF (ctrl+d)
-            break
-    
-    final_input = '\n'.join(lines).strip()
-    return final_input
+        while True:
+            try:
+                line = input()
+                if not line:
+                    empty_line_count += 1
+                    if empty_line_count >= 2:  # Two consecutive empty lines means we're done
+                        console.print("Processing input...", style="bold yellow")
+                        break
+                else:
+                    empty_line_count = 0
+                    lines.append(line)
+            except EOFError:  # Handle EOF (ctrl+d)
+                break
+            
+        final_input = '\n'.join(lines).strip()
+        return final_input
+        
+    except EOFError:  # Handle EOF at the very first input
+        return ""
 
 def main():
     config = load_config()
+    
+    # Configure module-specific logging based on config
+    if config.get('debug', False):
+        # Enable debug for our modules when debug is true
+        logging.getLogger('llm_handlers').setLevel(logging.DEBUG)
+        logging.getLogger('kubectl_handler').setLevel(logging.DEBUG)
+    else:
+        # Set to WARNING to reduce noise when debug is false
+        logging.getLogger('llm_handlers').setLevel(logging.INFO)
+        logging.getLogger('kubectl_handler').setLevel(logging.INFO)
+    
     llm_handler = get_llm_handler(
         config['llm_provider'], 
         config['model'],

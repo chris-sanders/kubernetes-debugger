@@ -85,7 +85,6 @@ class BaseLLMHandler(ABC):
     def _execute_kubectl(self, command: str) -> Tuple[str, str, int]:
         """Execute kubectl command and handle results"""
         from kubectl_handler import execute_kubectl_command
-        logger.info(f"Executing kubectl command: {command}")
         return execute_kubectl_command(command)
 
     def process_query(self, query: str) -> str:
