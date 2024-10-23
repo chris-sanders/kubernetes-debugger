@@ -11,11 +11,26 @@ class BaseLLMHandler(ABC):
         self.api_key = api_key
         self.client = self._initialize_client()
         self.kubectl_tool_definition = self._get_kubectl_tool_definition()
-        self.system_prompt = """You are a Kubernetes cluster debugging assistant. 
-            You have read-only access to the cluster through kubectl commands.
-            Analyze issues and provide clear explanations.
-            When you need information, use kubectl commands through the provided function."""
         self.messages = None  # Will store conversation history
+        self.system_prompt = """You are a Kubernetes cluster debugging assistant. 
+        You have read-only access to the cluster through kubectl commands.
+        When investigating issues:
+        1. Start with broad commands like `kubectl get po -A` to see what is happening 
+        2. For detailed information, focus on specific pods or namespaces rather than requesting full cluster data
+        3. Avoid using '-o json' for full cluster queries as it's too verbose
+        4. Use targeted selectors, labels, or jsonpath when you need specific fields
+        5. Review each failure, being sure to check pod logs for clues
+        
+        For example:
+        - Use 'get pods -A' for cluster overview
+        - Then narrow down with commands like:
+          - 'describe pod <specific-pod> -n <namespace>'
+          - 'logs <specific-pod> -n <namespace>'
+          - 'get pods -n <namespace> -o jsonpath=...' (for specific fields)
+        
+        Only profide the top issues and no remediation steps.
+        """
+
 
     @abstractmethod
     def _initialize_client(self):
@@ -47,25 +62,24 @@ class BaseLLMHandler(ABC):
         return execute_kubectl_command(command)
 
     def process_query(self, query: str) -> str:
-        # Initialize messages only if this is the first query
         if self.messages is None:
             self.messages = self._initialize_messages(query)
         else:
-            # Add new query to existing conversation
             self.messages.append({"role": "user", "content": query})
-
+    
         while True:
             logger.info(f"Sending request to {self.__class__.__name__}...")
             logger.debug(f"Messages: {self.messages}")
-
+            
             response = self._create_completion(self.messages)
             has_tool_calls, new_messages, final_response = self._handle_tool_response(response)
-
+    
             if has_tool_calls:
                 self.messages.extend(new_messages)
             else:
-                # Add assistant's final response to history
+                # If we have a final response, append it and return immediately
                 self.messages.append({"role": "assistant", "content": final_response})
+                logger.info("Got final response, returning")
                 return final_response
 
     def reset_conversation(self):

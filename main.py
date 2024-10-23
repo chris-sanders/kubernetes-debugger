@@ -19,6 +19,19 @@ def load_config(config_path: str = "config.yaml") -> dict:
     with open(config_path, 'r') as f:
         return yaml.safe_load(f)
 
+def get_multiline_input() -> str:
+    """Collect all input lines until an empty line is encountered"""
+    lines = []
+    while True:
+        try:
+            line = input()
+            if not line:  # Empty line signals end of input
+                break
+            lines.append(line)
+        except EOFError:  # Handle EOF (ctrl+d)
+            break
+    return '\n'.join(lines).strip()
+
 def main():
     config = load_config()
     llm_handler = get_llm_handler(
@@ -29,26 +42,21 @@ def main():
     
     while True:
         console.print("\nDescribe the issue (or type 'exit' to quit, 'reset' for new conversation): ", style="bold blue")
-        user_input = input()
+        user_input = get_multiline_input()
         
+        if not user_input:  # Skip empty inputs
+            continue
+            
         if user_input.lower() == 'exit':
             break
         elif user_input.lower() == 'reset':
             llm_handler.reset_conversation()
             console.print("\nConversation reset.", style="bold yellow")
             continue
-        elif user_input.lower() == 'history':
-            history = llm_handler.get_conversation_history()
-            console.print("\nConversation History:", style="bold magenta")
-            for msg in history:
-                role_color = "cyan" if msg["role"] == "user" else "green"
-                console.print(f"\n[bold {role_color}]{msg['role']}:[/bold {role_color}] {msg['content']}")
-            continue
             
         try:
             response = llm_handler.process_query(user_input)
             console.print("\nResponse:", style="bold green")
-            # Convert the response to a Markdown object and print it
             md = Markdown(response)
             console.print(md)
         except Exception as e:
