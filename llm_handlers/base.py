@@ -15,6 +15,7 @@ class BaseLLMHandler(ABC):
             You have read-only access to the cluster through kubectl commands.
             Analyze issues and provide clear explanations.
             When you need information, use kubectl commands through the provided function."""
+        self.messages = None  # Will store conversation history
 
     @abstractmethod
     def _initialize_client(self):
@@ -46,29 +47,31 @@ class BaseLLMHandler(ABC):
         return execute_kubectl_command(command)
 
     def process_query(self, query: str) -> str:
-        messages = self._initialize_messages(query)
+        # Initialize messages only if this is the first query
+        if self.messages is None:
+            self.messages = self._initialize_messages(query)
+        else:
+            # Add new query to existing conversation
+            self.messages.append({"role": "user", "content": query})
 
         while True:
             logger.info(f"Sending request to {self.__class__.__name__}...")
-            logger.debug(f"Messages: {messages}")
+            logger.debug(f"Messages: {self.messages}")
 
-            response = self._create_completion(messages)
+            response = self._create_completion(self.messages)
             has_tool_calls, new_messages, final_response = self._handle_tool_response(response)
 
             if has_tool_calls:
-                messages.extend(new_messages)
+                self.messages.extend(new_messages)
             else:
+                # Add assistant's final response to history
+                self.messages.append({"role": "assistant", "content": final_response})
                 return final_response
 
-    def _initialize_messages(self, query: str) -> List[Dict]:
-        """Initialize the message list with system prompt and user query"""
-        return [
-            {
-                "role": "system",
-                "content": """You are a Kubernetes cluster debugging assistant. 
-                You have read-only access to the cluster through kubectl commands.
-                Analyze issues and provide clear explanations.
-                When you need information, use kubectl commands through the provided function."""
-            },
-            {"role": "user", "content": query}
-        ]
+    def reset_conversation(self):
+        """Method to explicitly clear conversation history"""
+        self.messages = None
+
+    def get_conversation_history(self) -> List[Dict]:
+        """Return the current conversation history"""
+        return self.messages if self.messages else []
