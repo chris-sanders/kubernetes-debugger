@@ -33,6 +33,9 @@ class BaseLLMHandler(ABC):
            - Reviewing logs and events
            - Checking node conditions
            - Investigating resource usage and limits
+        3. Do not use large output commands on a wide range of devices the number of characters allowed per command are limited.
+           - 'get pods -A -o json'
+           - 'describe pods -n <namespace>'
         
         Important Guidelines:
         - Directly identify and report root causes underlying symptoms like CrashLoopBackOff, specifying impacted pod names.
