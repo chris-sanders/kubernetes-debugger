@@ -45,7 +45,6 @@ def get_multiline_input() -> str:
             break
     
     final_input = '\n'.join(lines).strip()
-    print(f"DEBUG - Collected input:\n{final_input}\n---END INPUT---")  # Debug print
     return final_input
 
 def main():
