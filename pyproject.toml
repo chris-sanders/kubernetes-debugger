@@ -10,6 +10,7 @@ pyyaml = "*"
 anthropic = "^0.37.1"
 openai = "^1.52.1"
 #openai = {extras = [], version = "^1.52.1"}
+rich = "^13.9.3"
 
 [tool.poetry.group.dev.dependencies]
 #black = "^23.10.0"
