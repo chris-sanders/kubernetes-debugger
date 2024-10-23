@@ -28,7 +28,8 @@ class BaseLLMHandler(ABC):
           - 'logs <specific-pod> -n <namespace>'
           - 'get pods -n <namespace> -o jsonpath=...' (for specific fields)
         
-        Only profide the top issues and no remediation steps.
+        Do not try to provide remediation steps.
+        Try to highlight the root cause and not additional failures. For example, a pod in CrashLoop is not a root cause, I need to know why it's crashing. Failing a probe is not a root cause I need to know why it's failing.
         """
 
 
