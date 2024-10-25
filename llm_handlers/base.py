@@ -86,9 +86,11 @@ class BaseLLMHandler(ABC):
             logger.debug(f"Messages: {self.messages}")
             
             response = self._create_completion(self.messages)
+            logger.debug(f"Response: {response}")
             has_tool_calls, new_messages, final_response = self._handle_tool_response(response)
     
             if has_tool_calls:
+                logger.debug(f"Tool call requested adding new_messages: {new_messages}")
                 self.messages.extend(new_messages)
             else:
                 # If we have a final response, append it and return immediately
