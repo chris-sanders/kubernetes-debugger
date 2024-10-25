@@ -40,6 +40,7 @@ RUN mkdir -p /root/.kube
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
+ENV KUBECONFIG=/root/.kube/config
 
 # Create entrypoint script
 COPY scripts/entrypoint.sh /entrypoint.sh

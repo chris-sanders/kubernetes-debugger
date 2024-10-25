@@ -61,13 +61,9 @@ def main():
     
     # Configure module-specific logging based on config
     if config.get('debug', False):
-        # Enable debug for our modules when debug is true
-        logging.getLogger('llm_handlers').setLevel(logging.DEBUG)
-        logging.getLogger('kubectl_handler').setLevel(logging.DEBUG)
+        logging.basicConfig(level=logging.DEBUG)
     else:
-        # Set to WARNING to reduce noise when debug is false
-        logging.getLogger('llm_handlers').setLevel(logging.INFO)
-        logging.getLogger('kubectl_handler').setLevel(logging.INFO)
+        logging.basicConfig(level=logging.WARNING)
     
     llm_handler = get_llm_handler(
         config['llm_provider'], 
