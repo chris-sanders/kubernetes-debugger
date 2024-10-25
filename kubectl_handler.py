@@ -3,7 +3,7 @@ import subprocess
 from typing import Tuple
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("kubernetes-debugger")
 
 def truncate_logs(log_content: str, lines_per_section: int = 100) -> str:
     """

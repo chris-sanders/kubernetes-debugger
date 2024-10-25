@@ -5,15 +5,13 @@ from rich.console import Console
 from rich.markdown import Markdown
 from llm_handlers import get_llm_handler
 
-# Set up logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
 logger = logging.getLogger(__name__)
 
-# Set third-party loggers to WARNING to reduce noise
-logging.getLogger('httpx').setLevel(logging.WARNING)
+# Configure the root logger to WARNING (or any other level you prefer)
+logging.basicConfig(
+    level=logging.WARNING,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
 
 # Create a console instance
 console = Console()
@@ -59,18 +57,18 @@ def get_multiline_input() -> str:
 def main():
     config = load_config()
     
-    # Configure module-specific logging based on config
+    # Configure logging based on the 'debug' flag in the config
     if config.get('debug', False):
-        logging.basicConfig(level=logging.DEBUG)
+        logging.getLogger('kubernetes-debugger').setLevel(logging.DEBUG)
     else:
-        logging.basicConfig(level=logging.WARNING)
+        logging.getLogger('kubernetes-debugger').setLevel(logging.WARNING)
     
     llm_handler = get_llm_handler(
-        config['llm_provider'], 
+        config['llm_provider'],
         config['model'],
         config
     )
-    
+
     while True:
         console.print("\nDescribe the issue (or type 'exit' to quit, 'reset' for new conversation): ", style="bold blue")
         user_input = get_multiline_input()

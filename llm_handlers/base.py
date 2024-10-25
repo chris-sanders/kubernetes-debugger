@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 import logging
 from typing import List, Dict, Any, Tuple
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("kubernetes-debugger")
 
 class BaseLLMHandler(ABC):
     def __init__(self, model: str, api_key: str) -> None:

@@ -6,7 +6,7 @@ from openai import OpenAI
 from .base import BaseLLMHandler
 from kubectl_handler import execute_kubectl_command
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("kubernetes-debugger")
 
 class OpenAIHandler(BaseLLMHandler):
     def _initialize_client(self):

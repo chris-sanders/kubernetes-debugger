@@ -4,7 +4,7 @@ import logging
 from anthropic import Anthropic
 from .base import BaseLLMHandler
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("kubernetes-debugger")
 
 class AnthropicHandler(BaseLLMHandler):
     def _initialize_client(self):
