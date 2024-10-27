@@ -1,20 +1,39 @@
+# main.py
 import logging
-from typing import Optional
 import yaml
+import threading
 from rich.console import Console
-from rich.markdown import Markdown
-from llm_handlers import get_llm_handler
 
-logger = logging.getLogger(__name__)
-
-# Configure the root logger to WARNING (or any other level you prefer)
+# Configure logging
 logging.basicConfig(
     level=logging.WARNING,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
-
-# Create a console instance
+logger = logging.getLogger('kubernetes-debugger')
 console = Console()
+
+# Global variables for dependency loading
+dependencies_loaded = threading.Event()
+llm_handler = None
+markdown_module = None
+
+def load_dependencies(config):
+    """Load heavy dependencies in background"""
+    global llm_handler, markdown_module
+    try:
+        from rich.markdown import Markdown
+        from llm_handlers import get_llm_handler
+        
+        markdown_module = Markdown
+        llm_handler = get_llm_handler(
+            config['llm_provider'],
+            config['model'],
+            config
+        )
+        dependencies_loaded.set()
+    except Exception as e:
+        logger.error(f"Error loading dependencies: {e}")
+        dependencies_loaded.set()
 
 def load_config(config_path: str = "config.yaml") -> dict:
     with open(config_path, 'r') as f:
@@ -27,7 +46,6 @@ def get_multiline_input() -> str:
     empty_line_count = 0
     
     try:
-        # Handle single-word commands immediately
         first_line = input()
         if first_line.lower() in ['exit', 'reset']:
             return first_line
@@ -39,46 +57,47 @@ def get_multiline_input() -> str:
                 line = input()
                 if not line:
                     empty_line_count += 1
-                    if empty_line_count >= 2:  # Two consecutive empty lines means we're done
+                    if empty_line_count >= 2:
                         console.print("Processing input...", style="bold yellow")
                         break
                 else:
                     empty_line_count = 0
                     lines.append(line)
-            except EOFError:  # Handle EOF (ctrl+d)
+            except EOFError:
                 break
             
         final_input = '\n'.join(lines).strip()
         return final_input
         
-    except EOFError:  # Handle EOF at the very first input
+    except EOFError:
         return ""
 
 def main():
     config = load_config()
-    
-    # Configure logging based on the 'debug' flag in the config
     if config.get('debug', False):
-        logging.getLogger('kubernetes-debugger').setLevel(logging.DEBUG)
-    else:
-        logging.getLogger('kubernetes-debugger').setLevel(logging.WARNING)
-    
-    llm_handler = get_llm_handler(
-        config['llm_provider'],
-        config['model'],
-        config
-    )
+        logger.setLevel(logging.DEBUG)
+
+    # Start loading dependencies in background
+    loading_thread = threading.Thread(target=load_dependencies, args=(config,))
+    loading_thread.daemon = True
+    loading_thread.start()
 
     while True:
         console.print("\nDescribe the issue (or type 'exit' to quit, 'reset' for new conversation): ", style="bold blue")
         user_input = get_multiline_input()
         
-        if not user_input:  # Skip empty inputs
+        if not user_input:
             continue
             
         if user_input.lower() == 'exit':
             break
-        elif user_input.lower() == 'reset':
+            
+        # Wait for dependencies to be loaded before processing
+        if not dependencies_loaded.is_set():
+            console.print("Finalizing initialization...", style="bold yellow")
+            dependencies_loaded.wait()
+            
+        if user_input.lower() == 'reset':
             llm_handler.reset_conversation()
             console.print("\nConversation reset.", style="bold yellow")
             continue
@@ -86,7 +105,7 @@ def main():
         try:
             response = llm_handler.process_query(user_input)
             console.print("\nResponse:", style="bold green")
-            md = Markdown(response)
+            md = markdown_module(response)
             console.print(md)
         except Exception as e:
             logger.error(f"Error processing query: {e}")

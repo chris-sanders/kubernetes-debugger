@@ -6,5 +6,4 @@ if [ "$1" = "config" ]; then
     exit 0
 fi
 
-# Default behavior: run the main application
 exec python main.py "$@"
