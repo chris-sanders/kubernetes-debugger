@@ -36,13 +36,13 @@ class BaseLLMHandler(ABC):
         Response Format:
         Issues Found:
         
-        1. Current Issues:
-           1. [Core Service Priority: Detailed root cause and evidence]
-              - Evidence: [Specific log messages and exact configuration errors if applicable, including ConfigMap content when relevant]
+        1. Critical Issues: # This should only be issues currently impacting the cluster, if they exist
+           1. Issue Name: Detailed root cause and evidence
+              - Evidence: Specific log messages and exact configuration errors if applicable, including ConfigMap content when relevant
         
-        2. Historical Issues (Resolved or Not Affecting Services, and only if some are found):
-           1. [Historical Issue Description]
-              - Evidence: [Details about the resolved issue, if applicable]
+        2. Other Issues: # All non critical issues if they exist should be here
+           1. Issue Name: Explanation of the issue
+              - Evidence: Specific log messages and exact configuration errors if applicable, including ConfigMap content when relevant
         
         Ensure you check logs from all containers and provide specific ConfigMap details when they show errors, focusing on core and critical infrastructure components.
         """

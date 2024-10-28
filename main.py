@@ -10,6 +10,7 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger('kubernetes-debugger')
+logger.setLevel(logging.INFO)
 console = Console()
 
 # Global variables for dependency loading
