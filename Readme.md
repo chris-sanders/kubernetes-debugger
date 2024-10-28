@@ -4,6 +4,10 @@ An experimental tool for exploring LLM tool calling capabilities with kubectl. T
 
 ⚠️ **Warning**: While the LLM is instructed to perform read-only operations, there are currently no technical controls enforcing this limitation. **Do not use this tool with production clusters.**
 
+## Demo
+
+![Kubernetes AI Debugger Demo](demo.gif)
+
 ## Running the Tool
 
 ## Configuration
