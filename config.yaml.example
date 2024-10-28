@@ -1,0 +1,10 @@
+llm_provider: "openai"
+model: "gpt-4o-mini"
+#model: "gpt-4o"
+#llm_provider: "anthropic"
+#model: "claude-3-5-sonnet-20241022"
+debug: false
+api_keys:
+  anthropic: ""
+  openai: ""
+
