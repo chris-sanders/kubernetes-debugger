@@ -34,7 +34,7 @@ Pull and run the latest development build:
 docker run -it \
   -v $KUBECONFIG:/root/.kube/config \
   -v $(pwd)/config.yaml:/app/config.yaml \
-  ghcr.io/chris-sanders/kubernetes-debugger:dev
+  ghcr.io/chris-sanders/kubernetes-debugger:latest
 ```
 
 ### Local Development
