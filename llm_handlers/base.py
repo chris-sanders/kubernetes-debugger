@@ -6,7 +6,7 @@ from typing import List, Dict, Any, Tuple
 logger = logging.getLogger("kubernetes-debugger")
 
 class BaseLLMHandler(ABC):
-    def __init__(self, model: str, api_key: str) -> None:
+    def __init__(self, model: str, api_key: str, config: dict) -> None:
         self.model = model
         self.api_key = api_key
         self.client = self._initialize_client()
@@ -46,6 +46,8 @@ class BaseLLMHandler(ABC):
         
         Ensure you check logs from all containers and provide specific ConfigMap details when they show errors, focusing on core and critical infrastructure components.
         """
+        if "system_prompt" in config:
+            self.system_prompt = config["system_prompt"]
 
     @abstractmethod
     def _initialize_client(self):
