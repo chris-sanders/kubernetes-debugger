@@ -41,31 +41,22 @@ def load_config(config_path: str = "config.yaml") -> dict:
         return yaml.safe_load(f)
 
 def get_multiline_input() -> str:
-    """Collect all input lines until double empty line or EOF"""
+    """Collect all input lines until a double empty line or EOF"""
     console.print("(Enter input, press Enter twice when done)", style="bold cyan")
     lines = []
     empty_line_count = 0
     
     try:
-        first_line = input()
-        if first_line.lower() in ['exit', 'reset']:
-            return first_line
-            
-        lines.append(first_line)
-        
         while True:
-            try:
-                line = input()
-                if not line:
-                    empty_line_count += 1
-                    if empty_line_count >= 2:
-                        console.print("Processing input...", style="bold yellow")
-                        break
-                else:
-                    empty_line_count = 0
-                    lines.append(line)
-            except EOFError:
-                break
+            line = input()
+            if not line:
+                empty_line_count += 1
+                if empty_line_count >= 2:
+                    console.print("Processing input...", style="bold yellow")
+                    break
+            else:
+                empty_line_count = 0
+                lines.append(line)
             
         final_input = '\n'.join(lines).strip()
         return final_input
@@ -73,19 +64,34 @@ def get_multiline_input() -> str:
     except EOFError:
         return ""
 
+def get_single_line_input() -> str:
+    """Collect a single line of input"""
+    console.print("(Enter input, press Enter when done)", style="bold cyan")
+    try:
+        return input().strip()
+    except EOFError:
+        return ""
+
 def main():
     config = load_config()
     if config.get('debug', False):
         logger.setLevel(logging.DEBUG)
-
-    # Start loading dependencies in background
+    
+    # Start loading dependencies in the background
     loading_thread = threading.Thread(target=load_dependencies, args=(config,))
     loading_thread.daemon = True
     loading_thread.start()
 
+    # Default to single-line input, but allow multi-line if configured
+    use_multi_line = config.get('multi_line_input', False)
+
     while True:
         console.print("\nDescribe the issue (or type 'exit' to quit, 'reset' for new conversation): ", style="bold blue")
-        user_input = get_multiline_input()
+        
+        if use_multi_line:
+            user_input = get_multiline_input()
+        else:
+            user_input = get_single_line_input()
         
         if not user_input:
             continue

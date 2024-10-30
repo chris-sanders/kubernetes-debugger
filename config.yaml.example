@@ -8,4 +8,5 @@ api_keys:
   anthropic: ""
   openai: ""
 # system_prompt: |
-# This will override the built in system prompt
+#   This will override the built in system prompt
+# multi_line_input: true
